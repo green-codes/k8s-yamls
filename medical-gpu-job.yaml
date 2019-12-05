@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: medical-gpu-job
+  namespace: mas-medical
+spec:
+  template:
+    spec:
+      nodeSelector:
+        nautilus.io/region: ucsd # use ucsd nodes only
+      containers:
+      - name: sleep-job
+        image: gitlab-registry.nautilus.optiputer.net/greencodes/images/master/keras-jupyter-dask:latest
+        command: ["sleep", "infinity"]
+        resources:
+          limits:
+            memory: "96G"
+            # cpu: 2
+            nvidia.com/gpu: 1
+          requests:
+            memory: "1G"
+            cpu: 1
+            nvidia.com/gpu: 1
+        volumeMounts:
+          - name: ceph
+            mountPath: "/ceph" 
+      volumes:
+        - name: ceph
+          persistentVolumeClaim:
+            claimName: mas-medical-cephfs
+      restartPolicy: Never
+  backoffLimit: 1
